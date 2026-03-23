@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Training System — PEJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --olive-deep:   #3A4E1C;
+            --olive:        #5A6E2E;
+            --olive-mid:    #7A9040;
+            --olive-light:  #A4B86A;
+            --olive-pale:   #C8D89A;
+            --olive-bg:     #8E9E60;
+            --beige-dk:     #C4A26A;
+            --beige:        #E4CC9A;
+            --beige-lt:     #F2E6C8;
+            --beige-pale:   #FAF4E4;
+            --cream:        #FEFCF0;
+            --text-dark:    #1A2408;
+            --text-mid:     #2E4010;
+            --gold:         #B8913A;
+            --gold-lt:      #D4AB54;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, #6E8035 0%, #8E9E60 35%, #A8B878 60%, #C8D890 100%);
+            background-size: 400% 400%;
+            animation: skyDrift 18s ease infinite;
+            font-family: 'Raleway', sans-serif;
+            color: var(--text-dark);
+            position: relative;
+        }
+
+        /* Subtle background plane silhouettes */
+        body::before {
+            content: '✈';
+            position: fixed;
+            font-size: 120px;
+            color: rgba(255,255,255,0.04);
+            top: 10%;
+            left: -80px;
+            animation: bgPlane1 40s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        body::after {
+            content: '✈';
+            position: fixed;
+            font-size: 60px;
+            color: rgba(255,255,255,0.05);
+            top: 65%;
+            left: -50px;
+            animation: bgPlane1 60s 15s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes bgPlane1 {
+            0%   { left: -200px; }
+            100% { left: calc(100vw + 200px); }
+        }
+
+        @keyframes skyDrift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ── BACK BUTTON ── */
+        .back-home {
+            position: fixed;
+            top: 16px; left: 16px;
+            z-index: 200;
+            font-family: 'Raleway', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--beige-lt);
+            background: rgba(42,56,18,0.75);
+            border: 1px solid rgba(212,171,84,0.3);
+            padding: 8px 18px;
+            border-radius: 2px;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s;
+        }
+        .back-home:hover { background: rgba(42,56,18,0.95); color: var(--gold-lt); }
+
+        /* ── APP CONTAINER ── */
+        .app-container {
+            width: 95vw;
+            max-width: 900px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ── HEADER ── */
+        header {
+            text-align: center;
+            padding: 14px 20px 10px;
+            flex-shrink: 0;
+            background: rgba(42,56,18,0.88);
+            backdrop-filter: blur(12px);
+            border-radius: 6px 6px 0 0;
+            border-bottom: 2px solid rgba(212,171,84,0.35);
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--gold-lt);
+            margin-bottom: 3px;
+        }
+        h2 {
+            font-family: 'Raleway', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(220,220,180,0.65);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.15);
+            margin: 10px auto 0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, var(--olive-light), var(--gold-lt));
+            transition: width 0.6s ease, background-color 0.5s ease;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: rgba(250,244,228,0.97);
+            border: 1px solid rgba(184,145,58,0.2);
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+            flex-grow: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        /* ── SCREENS ── */
+        .screen { display: none; opacity: 0; transition: opacity 0.3s ease; width: 100%; }
+        .screen.active { display: block; opacity: 1; }
+
+        h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--olive-deep);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        p.instructions {
+            margin-bottom: 15px;
+            font-size: 15px;
+            color: var(--text-mid);
+            line-height: 1.5;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .timer {
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #8B2020;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        /* ── BUTTONS ── */
+        button {
+            background: var(--beige-lt);
+            border: 1px solid var(--olive);
+            color: var(--olive-deep);
+            padding: 11px 22px;
+            font-family: 'Raleway', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 8px 5px;
+            border-radius: 3px;
+        }
+        button:hover { background: var(--beige); transform: translateY(-1px); }
+
+        button.primary {
+            background: linear-gradient(135deg, var(--olive-deep), var(--olive));
+            color: var(--beige-pale);
+            border: none;
+            box-shadow: 0 3px 12px rgba(42,58,18,0.25);
+        }
+        button.primary:hover {
+            background: linear-gradient(135deg, var(--olive), var(--olive-mid));
+            box-shadow: 0 6px 20px rgba(42,58,18,0.35);
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 10px;
+            font-size: 18px;
+            font-family: 'Raleway', sans-serif;
+            border: 2px solid rgba(90,110,46,0.4);
+            border-radius: 4px;
+            text-align: center;
+            margin: 10px 0;
+            width: 200px;
+            background: var(--cream);
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus {
+            border-color: var(--olive-mid);
+        }
+
+        /* ── GAME SPECIFIC ── */
+
+        /* Game 1: Logic Grid */
+        .logic-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 62px);
+            gap: 3px;
+            justify-content: center;
+            margin: 10px auto;
+            background: var(--olive);
+            padding: 3px;
+            border-radius: 4px;
+            box-shadow: 0 4px 16px rgba(42,58,18,0.2);
+        }
+        .logic-cell {
+            width: 62px; height: 62px;
+            background: var(--cream);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 700;
+            font-family: 'Cinzel', serif;
+            color: var(--text-dark);
+        }
+        .logic-cell input {
+            width: 100%; height: 100%;
+            border: none;
+            font-size: 22px;
+            font-family: 'Cinzel', serif;
+            color: var(--olive);
+            outline: none;
+            margin: 0;
+            text-align: center;
+            background: var(--beige-lt);
+        }
+
+        /* Game 2: Anagram */
+        .anagram-word {
+            font-family: 'Cinzel', serif;
+            font-size: 34px;
+            letter-spacing: 8px;
+            font-weight: 700;
+            margin: 20px 0;
+            color: var(--olive-deep);
+            text-shadow: 0 2px 8px rgba(42,58,18,0.15);
+        }
+
+        /* Game 3: Memory Grid */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 62px);
+            gap: 6px;
+            justify-content: center;
+            margin: 15px auto;
+        }
+        .memory-cell {
+            width: 62px; height: 62px;
+            background: var(--beige-lt);
+            border: 2px solid rgba(184,145,58,0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 4px;
+        }
+        .memory-cell:hover { background: var(--beige); }
+        .memory-cell.highlight {
+            background: linear-gradient(135deg, var(--olive), var(--olive-mid));
+            border-color: var(--olive-deep);
+            box-shadow: 0 2px 8px rgba(42,58,18,0.3);
+        }
+
+        /* Game 4: Spatial */
+        .compass-box {
+            border: 3px solid var(--olive);
+            border-radius: 50%;
+            width: 130px; height: 130px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 10px auto;
+            font-size: 28px;
+            background: radial-gradient(circle, var(--beige-lt), var(--cream));
+            box-shadow: 0 4px 16px rgba(42,58,18,0.15), inset 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        /* Game 5: Pattern */
+        .pattern-container {
+            display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin: 20px 0;
+        }
+        .pattern-item {
+            font-size: 38px;
+            cursor: pointer;
+            padding: 16px;
+            background: var(--beige-lt);
+            border: 2px solid rgba(184,145,58,0.25);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .pattern-item:hover {
+            border-color: var(--olive);
+            background: var(--beige);
+            transform: scale(1.08);
+        }
+
+        /* Game 6: Reaction */
+        .reaction-box {
+            width: 200px; height: 150px;
+            background: var(--beige);
+            border: 3px solid var(--olive);
+            margin: 15px auto;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: background-color 0.1s;
+            box-shadow: 0 4px 16px rgba(42,58,18,0.1);
+            letter-spacing: 2px;
+        }
+
+        /* Game 7: Radar */
+        .radar-zone {
+            width: 100%; max-width: 400px; height: 250px;
+            background: linear-gradient(145deg, #1A2408, #2E3E10);
+            border-radius: 8px;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--olive);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 0 30px rgba(90,110,46,0.1);
+        }
+        .radar-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg, transparent, transparent 24px,
+                rgba(90,110,46,0.08) 24px, rgba(90,110,46,0.08) 25px
+            ),
+            repeating-linear-gradient(
+                90deg, transparent, transparent 24px,
+                rgba(90,110,46,0.08) 24px, rgba(90,110,46,0.08) 25px
+            );
+        }
+        .radar-target {
+            width: 32px; height: 32px;
+            background: radial-gradient(circle, #6ED87A, #3A9A40);
+            border-radius: 50%;
+            position: absolute;
+            cursor: crosshair;
+            transition: all 0.3s linear;
+            box-shadow: 0 0 14px #4ADB56, 0 0 28px rgba(74,219,86,0.4);
+        }
+
+        /* Game 8: Multi-task */
+        .multi-container {
+            display: flex; justify-content: center; gap: 28px; align-items: center; margin: 15px 0;
+        }
+        .multi-box {
+            width: 92px; height: 92px;
+            border: 3px solid var(--olive);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cinzel', serif;
+            font-size: 28px; font-weight: 700;
+            color: var(--text-dark);
+            background: var(--beige-lt);
+        }
+
+        /* Results */
+        .results-table {
+            width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px;
+        }
+        .results-table th, .results-table td {
+            border: 1px solid rgba(184,145,58,0.3); padding: 9px 12px; text-align: center;
+        }
+        .results-table th {
+            background: rgba(90,110,46,0.15);
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--olive-deep);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .results-table td { font-family: 'Raleway', sans-serif; color: var(--text-mid); }
+        .results-table tbody tr:hover { background: rgba(164,184,106,0.1); }
+        .results-container { width: 100%; max-height: 50vh; overflow-y: auto; }
+
+        /* Transition screen */
+        #screen-transition h3 {
+            font-size: 26px;
+            color: var(--olive);
+            animation: pulse 1.2s ease infinite alternate;
+        }
+        @keyframes pulse { 0% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        /* Next game button wrapper */
+        .next-game-row {
+            position: absolute;
+            bottom: 16px;
+            right: 20px;
+        }
+        .next-game-row button {
+            font-size: 12px;
+            letter-spacing: 2px;
+            padding: 8px 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <a class="back-home" href="index.html">← Back to Home</a>
+
+    <div class="app-container">
+        <header>
+            <h1>Cognitive Training System</h1>
+            <h2>Advanced Pilot Aptitude · Simulation Alpha</h2>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </header>
+
+        <main class="card">
+
+            <div id="screen-intro" class="screen active">
+                <h3>Pre-Flight Assessment</h3>
+                <p class="instructions">This advanced simulator evaluates sequential logic, spatial orientation, target tracking, and multi-tasking under time pressure.</p>
+                <p class="instructions">You will complete <strong>8 continuous modules</strong>. The interface is locked. Maximize focus.</p>
+                <button class="primary" onclick="startTraining()">Initialize Sequence</button>
+            </div>
+
+            <div id="screen-transition" class="screen">
+                <h3 id="transition-text">Loading Next Module...</h3>
+            </div>
+
+            <div id="screen-game1" class="screen">
+                <h3>Module 1: Deductive Logic</h3>
+                <p class="instructions">Fill the missing number (1–4) in each row to complete the sequence.</p>
+                <div class="timer" id="timer-game1">Time: 30s</div>
+                <div class="logic-grid" id="logicGrid"></div>
+                <button class="primary" onclick="submitGame1()">Submit Solution</button>
+            </div>
+
+            <div id="screen-game2" class="screen">
+                <h3>Module 2: Verbal Processing</h3>
+                <p class="instructions">Unscramble the advanced aviation terminology.</p>
+                <div class="timer" id="timer-game2">Time: 25s</div>
+                <div class="anagram-word" id="anagramDisplay"></div>
+                <input type="text" id="anagramInput" placeholder="Enter word..." autocomplete="off">
+                <br>
+                <button class="primary" onclick="submitGame2()">Submit Word</button>
+            </div>
+
+            <div id="screen-game3" class="screen">
+                <h3>Module 3: Advanced Visual Memory</h3>
+                <p class="instructions" id="memoryInstructions">Memorize the 5 highlighted sectors.</p>
+                <div class="timer" id="timer-game3">Time: 15s</div>
+                <div class="memory-grid" id="memoryGrid"></div>
+                <button class="primary" id="memorySubmitBtn" style="display:none;" onclick="submitGame3()">Verify Pattern</button>
+            </div>
+
+            <div id="screen-game4" class="screen">
+                <h3>Module 4: Spatial Orientation</h3>
+                <p class="instructions">Your aircraft is flying a heading of <strong id="spatialHeading">090° (East)</strong>.<br>ATC calls traffic at your <strong id="spatialClock">9 o'clock</strong>.<br>What is the heading of the traffic?</p>
+                <div class="timer" id="timer-game4">Time: 20s</div>
+                <div class="compass-box" id="compassIcon">✈️</div>
+                <div id="spatialOptions"></div>
+            </div>
+
+            <div id="screen-game5" class="screen">
+                <h3>Module 5: Anomaly Detection</h3>
+                <p class="instructions">Identify the symbol that breaks the structural pattern.</p>
+                <div class="timer" id="timer-game5">Time: 15s</div>
+                <div class="pattern-container" id="patternContainer"></div>
+            </div>
+
+            <div id="screen-game6" class="screen">
+                <h3>Module 6: Go / No-Go Reaction</h3>
+                <p class="instructions">Click the box ONLY when it turns <strong style="color:#2E7D32;">GREEN</strong>. Ignore Blue and Red.</p>
+                <div class="timer" id="timer-game6">Time: 20s</div>
+                <div class="reaction-box" id="reactionBox" onmousedown="handleReactionClick()">STANDBY</div>
+                <p id="reactionResult" style="font-weight:700; margin-top:10px; font-family:'Cinzel',serif; letter-spacing:2px;"></p>
+            </div>
+
+            <div id="screen-game7" class="screen">
+                <h3>Module 7: Target Tracking</h3>
+                <p class="instructions">Click the moving target as many times as possible before time runs out.</p>
+                <div class="timer" id="timer-game7">Time: 15s</div>
+                <div class="radar-zone" id="radarZone">
+                    <div class="radar-target" id="radarTarget" onmousedown="handleTargetClick()"></div>
+                </div>
+                <p style="margin-top:8px; font-family:'Raleway',sans-serif;">Hits: <span id="targetHits" style="font-weight:700; color:var(--olive); font-family:'Cinzel',serif;">0</span></p>
+            </div>
+
+            <div id="screen-game8" class="screen">
+                <h3>Module 8: Overload Management</h3>
+                <p class="instructions" style="font-size:14px;">
+                    1. Solve the math problem.<br>
+                    2. Click "Engage" <b>ONLY</b> when the left square is BLUE.
+                </p>
+                <div class="timer" id="timer-game8">Time: 20s</div>
+                <div class="multi-container">
+                    <div class="multi-box" id="multiColorBox" style="background:var(--beige);"></div>
+                    <div class="multi-box" id="multiNumberBox">7</div>
+                    <button id="multiCaptureBtn" onclick="handleMultiCapture()">ENGAGE</button>
+                </div>
+                <div style="margin-top:10px;">
+                    <label id="multiMathLabel" style="font-weight:700; font-size:20px; font-family:'Cinzel',serif; color:var(--olive-deep);">14 × 2 = </label>
+                    <input type="number" id="multiMathInput" style="width:100px;">
+                </div>
+                <button class="primary" onclick="submitGame8()">Submit &amp; Conclude</button>
+            </div>
+
+            <div id="screen-results" class="screen">
+                <h3>Post-Flight Debriefing</h3>
+                <div class="results-container">
+                    <table class="results-table" id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>Module</th>
+                                <th>Score (0–100)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody"></tbody>
+                    </table>
+                </div>
+                <h2 style="margin-top:15px; font-size:20px; color:var(--olive-deep); font-family:'Cinzel',serif;">
+                    Total Score: <span id="finalTotalScore" style="color:var(--gold);">0</span> / 800
+                </h2>
+                <button class="primary" onclick="location.reload()">Restart Training Sequence</button>
+            </div>
+
+            <!-- Next Game button always visible on card -->
+            <div class="next-game-row">
+                <button class="primary" onclick="goToNextGame()">Next Game ✈</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        /* --- Core State & Navigation --- */
+        const state = { currentScreen: 'intro', scores: {}, activeIntervals: [] };
+        const screens = ['intro', 'game1', 'game2', 'game3', 'game4', 'game5', 'game6', 'game7', 'game8', 'results'];
+        
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`screen-${screenId}`).classList.add('active');
+            state.currentScreen = screenId;
+
+            let index = screens.indexOf(screenId);
+            if(index > 0) {
+                let pct = ((index - 1) / (screens.length - 2)) * 100;
+                let bar = document.getElementById('progressBar');
+                bar.style.width = pct + '%';
+                if(pct === 100) bar.style.background = 'linear-gradient(to right, #4ADB56, #B8C96A)';
+            }
+        }
+
+        function transitionTo(nextScreenId, moduleName) {
+            clearAllIntervals();
+            switchScreen('transition');
+            document.getElementById('transition-text').innerText = moduleName ? `Initializing ${moduleName}...` : 'Processing Telemetry...';
+            setTimeout(() => {
+                switchScreen(nextScreenId);
+                initializeGame(nextScreenId);
+            }, 1800);
+        }
+
+        function startTraining() { transitionTo('game1', 'Module 1'); }
+
+        function startTimer(duration, displayElementId, onTimeout) {
+            let timeRemaining = duration;
+            document.getElementById(displayElementId).innerText = `Time: ${timeRemaining}s`;
+            let timer = setInterval(() => {
+                timeRemaining--;
+                document.getElementById(displayElementId).innerText = `Time: ${timeRemaining}s`;
+                if (timeRemaining <= 5) document.getElementById(displayElementId).style.color = '#C0392B';
+                if (timeRemaining <= 0) { clearInterval(timer); onTimeout(); }
+            }, 1000);
+            state.activeIntervals.push(timer);
+            return timer;
+        }
+
+        function clearAllIntervals() {
+            state.activeIntervals.forEach(clearInterval);
+            state.activeIntervals = [];
+        }
+
+        function recordScore(game, score, feedback) {
+            state.scores[game] = { score: Math.round(score), feedback };
+        }
+
+        function initializeGame(gameId) {
+            if (gameId === 'game1') initGame1();
+            if (gameId === 'game2') initGame2();
+            if (gameId === 'game3') initGame3();
+            if (gameId === 'game4') initGame4();
+            if (gameId === 'game5') initGame5();
+            if (gameId === 'game6') initGame6();
+            if (gameId === 'game7') initGame7();
+            if (gameId === 'game8') initGame8();
+            if (gameId === 'results') generateResults();
+        }
+
+        /* --- Game 1: Deductive Logic (4x4) --- */
+        const logicPuzzle = [ [1,2,3,''], [4,'',2,1], ['',4,1,2], [2,1,'',3] ];
+        const logicSolution = [4, 3, 3, 4];
+        
+        function initGame1() {
+            const grid = document.getElementById('logicGrid');
+            grid.innerHTML = '';
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 4; c++) {
+                    let cell = document.createElement('div');
+                    cell.className = 'logic-cell';
+                    if (logicPuzzle[r][c] === '') {
+                        cell.innerHTML = `<input type="number" min="1" max="4" id="logic-ans-${r}">`;
+                    } else {
+                        cell.innerText = logicPuzzle[r][c];
+                    }
+                    grid.appendChild(cell);
+                }
+            }
+            startTimer(30, 'timer-game1', submitGame1);
+        }
+
+        function submitGame1() {
+            let correct = 0;
+            for(let i=0; i<4; i++) {
+                let val = document.getElementById(`logic-ans-${i}`)?.value;
+                if (parseInt(val) === logicSolution[i]) correct++;
+            }
+            let score = (correct / 4) * 100;
+            recordScore('Logic', score, `${correct}/4 sequences correct`);
+            transitionTo('game2', 'Module 2');
+        }
+
+        /* --- Game 2: Anagram --- */
+        const words = ['TURBULENCE', 'ALTIMETER', 'FUSELAGE', 'ELEVATOR', 'AILERON'];
+        let targetWord = "";
+        
+        function initGame2() {
+            targetWord = words[Math.floor(Math.random() * words.length)];
+            let scrambled = targetWord.split('').sort(() => 0.5 - Math.random()).join('');
+            document.getElementById('anagramDisplay').innerText = scrambled;
+            document.getElementById('anagramInput').value = '';
+            document.getElementById('anagramInput').focus();
+            startTimer(25, 'timer-game2', submitGame2);
+        }
+
+        function submitGame2() {
+            let userWord = document.getElementById('anagramInput').value.toUpperCase().trim();
+            let score = userWord === targetWord ? 100 : 0;
+            recordScore('Verbal', score, score === 100 ? "Decoded" : `Failed (was ${targetWord})`);
+            transitionTo('game3', 'Module 3');
+        }
+
+        /* --- Game 3: Visual Memory (4x4) --- */
+        let memTargets = []; let memUser = [];
+        
+        function initGame3() {
+            const grid = document.getElementById('memoryGrid');
+            grid.innerHTML = '';
+            document.getElementById('memoryInstructions').innerText = "Memorize the 5 highlighted sectors.";
+            document.getElementById('memorySubmitBtn').style.display = 'none';
+            memTargets = []; memUser = [];
+
+            for(let i=0; i<16; i++) {
+                let cell = document.createElement('div');
+                cell.className = 'memory-cell';
+                cell.id = `mem-${i}`;
+                cell.onclick = () => toggleMemCell(i);
+                grid.appendChild(cell);
+            }
+
+            while(memTargets.length < 5) {
+                let r = Math.floor(Math.random() * 16);
+                if(!memTargets.includes(r)) memTargets.push(r);
+            }
+            memTargets.forEach(idx => document.getElementById(`mem-${idx}`).classList.add('highlight'));
+
+            setTimeout(() => {
+                document.querySelectorAll('.memory-cell').forEach(c => c.classList.remove('highlight'));
+                document.getElementById('memoryInstructions').innerText = "Recreate the pattern.";
+                document.getElementById('memorySubmitBtn').style.display = 'inline-block';
+                startTimer(15, 'timer-game3', submitGame3);
+            }, 3500);
+        }
+
+        function toggleMemCell(idx) {
+            if(document.getElementById('memoryInstructions').innerText.includes("Memorize")) return;
+            let cell = document.getElementById(`mem-${idx}`);
+            cell.classList.toggle('highlight');
+            if(memUser.includes(idx)) memUser = memUser.filter(i => i !== idx);
+            else memUser.push(idx);
+        }
+
+        function submitGame3() {
+            let matches = 0;
+            memTargets.forEach(idx => { if(memUser.includes(idx)) matches++; });
+            let mistakes = Math.abs(memUser.length - 5);
+            let score = Math.max(0, (matches * 20) - (mistakes * 10));
+            recordScore('Memory', score, `${matches}/5 matched`);
+            transitionTo('game4', 'Module 4');
+        }
+
+        /* --- Game 4: Spatial Orientation --- */
+        let spatialAns = "";
+        function initGame4() {
+            const headings = [ {h: '090° (East)', v: 90}, {h: '180° (South)', v: 180}, {h: '270° (West)', v: 270}, {h: '360° (North)', v: 360} ];
+            const clocks = [ {c: '3 o\'clock', v: 90}, {c: '9 o\'clock', v: -90}, {c: '6 o\'clock', v: 180} ];
+            
+            let base = headings[Math.floor(Math.random() * headings.length)];
+            let clock = clocks[Math.floor(Math.random() * clocks.length)];
+            
+            document.getElementById('spatialHeading').innerText = base.h;
+            document.getElementById('spatialClock').innerText = clock.c;
+            
+            let calc = (base.v + clock.v) % 360;
+            if (calc <= 0) calc += 360;
+            let ansStr = calc.toString().padStart(3, '0') + '°';
+            if(ansStr === "360°") ansStr = "360° / 000°";
+            spatialAns = ansStr;
+
+            let opts = [ansStr, "090°", "180°", "270°", "360° / 000°"].filter((v,i,a)=>a.indexOf(v)===i);
+            while(opts.length < 4) opts.push(["045°", "135°", "225°", "315°"][Math.floor(Math.random()*4)]);
+            opts = opts.sort(()=>0.5-Math.random()).slice(0,4);
+            if(!opts.includes(ansStr)) opts[0] = ansStr;
+            opts = opts.sort(()=>0.5-Math.random());
+
+            const container = document.getElementById('spatialOptions');
+            container.innerHTML = '';
+            opts.forEach(o => {
+                let btn = document.createElement('button');
+                btn.innerText = o;
+                btn.onclick = () => submitGame4(o === spatialAns);
+                container.appendChild(btn);
+            });
+
+            startTimer(20, 'timer-game4', () => submitGame4(false));
+        }
+
+        function submitGame4(isCorrect) {
+            recordScore('Spatial', isCorrect ? 100 : 0, isCorrect ? "Orientation Confirmed" : "Disorientation Detected");
+            transitionTo('game5', 'Module 5');
+        }
+
+        /* --- Game 5: Pattern Recognition --- */
+        function initGame5() {
+            const container = document.getElementById('patternContainer');
+            container.innerHTML = '';
+            const symbols = ['✈️', '🚁', '🚀', '🛸'];
+            let baseSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+            let oddSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+            while(oddSymbol === baseSymbol) oddSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+
+            let arr = [baseSymbol, baseSymbol, baseSymbol, baseSymbol, oddSymbol];
+            arr = arr.sort(() => 0.5 - Math.random());
+
+            arr.forEach(sym => {
+                let el = document.createElement('div');
+                el.className = 'pattern-item';
+                el.innerText = sym;
+                el.onclick = () => submitGame5(sym === oddSymbol);
+                container.appendChild(el);
+            });
+            startTimer(15, 'timer-game5', () => submitGame5(false));
+        }
+
+        function submitGame5(isCorrect) {
+            recordScore('Anomaly', isCorrect ? 100 : 0, isCorrect ? "Anomaly Isolated" : "Target Missed");
+            transitionTo('game6', 'Module 6');
+        }
+
+        /* --- Game 6: Go/No-Go Reaction --- */
+        let goScore = 0; let goErrors = 0;
+        function initGame6() {
+            goScore = 0; goErrors = 0;
+            document.getElementById('reactionResult').innerText = '';
+            let box = document.getElementById('reactionBox');
+            let colors = ['#10b981', '#3b82f6', '#ef4444'];
+            
+            let loop = setInterval(() => {
+                let c = colors[Math.floor(Math.random() * colors.length)];
+                box.style.backgroundColor = c;
+                box.style.color = 'white';
+            }, 800);
+            
+            state.activeIntervals.push(loop);
+            startTimer(20, 'timer-game6', submitGame6);
+        }
+
+        function handleReactionClick() {
+            let bg = document.getElementById('reactionBox').style.backgroundColor;
+            if(bg === 'rgb(16, 185, 129)') { goScore++; document.getElementById('reactionResult').innerText = "GOOD!"; document.getElementById('reactionResult').style.color = "#2E7D32"; }
+            else { goErrors++; document.getElementById('reactionResult').innerText = "ERROR!"; document.getElementById('reactionResult').style.color = "#C0392B"; }
+        }
+
+        function submitGame6() {
+            let s = Math.max(0, (goScore * 15) - (goErrors * 20));
+            if(s>100) s=100;
+            recordScore('Go/No-Go', s, `Hits: ${goScore}, Errors: ${goErrors}`);
+            transitionTo('game7', 'Module 7');
+        }
+
+        /* --- Game 7: Target Tracking --- */
+        let trackingHits = 0;
+        function initGame7() {
+            trackingHits = 0;
+            document.getElementById('targetHits').innerText = '0';
+            let target = document.getElementById('radarTarget');
+            
+            let loop = setInterval(() => {
+                let x = Math.floor(Math.random() * 90);
+                let y = Math.floor(Math.random() * 85);
+                target.style.left = x + '%';
+                target.style.top = y + '%';
+            }, 700);
+            
+            state.activeIntervals.push(loop);
+            startTimer(15, 'timer-game7', submitGame7);
+        }
+
+        function handleTargetClick() {
+            trackingHits++;
+            document.getElementById('targetHits').innerText = trackingHits;
+            document.getElementById('radarTarget').style.background = 'radial-gradient(circle, #FFD700, #B8913A)';
+            setTimeout(() => document.getElementById('radarTarget').style.background = 'radial-gradient(circle, #6ED87A, #3A9A40)', 100);
+        }
+
+        function submitGame7() {
+            let score = Math.min(100, trackingHits * 12);
+            recordScore('Tracking', score, `${trackingHits} targets acquired`);
+            transitionTo('game8', 'Module 8');
+        }
+
+        /* --- Game 8: Multi-Task Overload --- */
+        let mCorrect = 0; let mTotalBlues = 0; let mMistakes = 0; let mAns = 0;
+
+        function initGame8() {
+            document.getElementById('multiMathInput').value = '';
+            mCorrect = 0; mTotalBlues = 0; mMistakes = 0;
+            
+            let n1 = Math.floor(Math.random() * 10) + 5;
+            let n2 = Math.floor(Math.random() * 10) + 2;
+            mAns = n1 * n2;
+            document.getElementById('multiMathLabel').innerText = `${n1} × ${n2} = `;
+
+            let box = document.getElementById('multiColorBox');
+            let num = document.getElementById('multiNumberBox');
+            let colors = ['#3b82f6', '#ef4444', '#f59e0b'];
+
+            let loop = setInterval(() => {
+                let c = colors[Math.floor(Math.random() * colors.length)];
+                box.style.backgroundColor = c;
+                if(c === '#3b82f6') mTotalBlues++;
+                num.innerText = Math.floor(Math.random() * 99);
+            }, 1000);
+
+            state.activeIntervals.push(loop);
+            startTimer(20, 'timer-game8', submitGame8);
+        }
+
+        function handleMultiCapture() {
+            let bg = document.getElementById('multiColorBox').style.backgroundColor;
+            if(bg === 'rgb(59, 130, 246)') mCorrect++; else mMistakes++;
+        }
+
+        function submitGame8() {
+            let mathIn = parseInt(document.getElementById('multiMathInput').value);
+            let mathPass = (mathIn === mAns);
+            
+            let mathScore = mathPass ? 50 : 0;
+            let capAcc = mTotalBlues > 0 ? (mCorrect / mTotalBlues) : 1;
+            let capScore = Math.max(0, (capAcc * 50) - (mMistakes * 10));
+
+            let total = Math.min(100, mathScore + capScore);
+            recordScore('Overload', total, `Math: ${mathPass?'Pass':'Fail'}, Focus: ${mCorrect}/${mTotalBlues}`);
+            transitionTo('results');
+        }
+
+        /* --- Results Generation --- */
+        function generateResults() {
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+            let total = 0;
+
+            for(const [game, data] of Object.entries(state.scores)) {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `<td><b>${game}</b></td><td>${data.score}</td><td>${data.feedback}</td>`;
+                tbody.appendChild(tr);
+                total += data.score;
+            }
+
+            document.getElementById('finalTotalScore').innerText = total;
+            document.getElementById('progressBar').style.width = '100%';
+        }
+
+        function goToNextGame() { 
+            window.location.href = "game3.html"; 
+        }
+    </script>
+</body>
+</html>
